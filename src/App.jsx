@@ -1,41 +1,42 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Hero } from './components/sections/Hero';
 import { Services } from './components/sections/Services';
 import { Location } from './components/sections/Location';
 import { Footer } from './components/layout/Footer';
-import { Button } from './components/ui/Button';
+import { Navbar } from './components/layout/Navbar'; // Criaremos este componente
+import { Login } from './pages/Login';
+import { Booking } from './pages/Booking';
 
 function App() {
   return (
-    <div className="antialiased bg-zinc-950 min-h-screen font-sans">
-      {/* Navbar Dark/Gold */}
-      <nav className="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-black text-amber-500 tracking-tighter">TOCA.</div>
-          <div className="hidden md:flex gap-8 font-medium text-zinc-300">
-            <a href="#" className="hover:text-amber-500 transition">Início</a>
-            <a href="#" className="hover:text-amber-500 transition">Serviços</a>
-            <a href="#" className="hover:text-amber-500 transition">Contato</a>
-          </div>
-          <Button variant="outline" className="px-6 py-2">Login</Button>
-        </div>
-      </nav>
+    <Router>
+      <div className="antialiased bg-zinc-950 min-h-screen font-sans text-zinc-100">
+        <Navbar />
+        
+        <Routes>
+          <Route path="/" element={
+            <>
+              <Hero />
+              <Services />
+              <section className="py-20 bg-zinc-900 border-t border-zinc-800">
+                <div className="container mx-auto px-6 text-center">
+                  <h2 className="text-3xl lg:text-4xl font-bold mb-8">Pronto para dar o melhor ao seu amigo?</h2>
+                  <a href="/agendamento" className="bg-amber-500 text-zinc-950 px-8 py-3 rounded-full font-bold hover:bg-amber-400 transition-all inline-block">
+                    CADASTRAR MEU PET AGORA
+                  </a>
+                </div>
+              </section>
+              <Location />
+            </>
+          } />
+          
+          <Route path="/login" element={<Login />} />
+          <Route path="/agendamento" element={<Booking />} />
+        </Routes>
 
-      <Hero />
-      <Services />
-      
-      {/* Seção Extra de Chamada para Ação */}
-      <section className="py-20 bg-zinc-800 border-t border-zinc-800">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-zinc-100 mb-8">Pronto para dar o melhor ao seu amigo?</h2>
-          <Button>CADASTRAR MEU PET AGORA</Button>
-        </div>
-      </section>
-
-      {/* Nova Seção com o Mapa */}
-      <Location />
-
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
