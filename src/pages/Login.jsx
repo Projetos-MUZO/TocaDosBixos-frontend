@@ -29,7 +29,7 @@ export const Login = () => {
         </form>
         
         <p className="mt-8 text-center text-zinc-500 text-sm">
-          Ainda não tem conta? <Link to="/agendamento" className="text-amber-500 hover:underline">Cadastre seu pet</Link>
+          Ainda não tem conta? <Link to="/registrar" className="text-amber-500 hover:underline">Cadastre-se</Link>
         </p>
       </div>
     </div>

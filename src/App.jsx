@@ -3,8 +3,9 @@ import { Hero } from './components/sections/Hero';
 import { Services } from './components/sections/Services';
 import { Location } from './components/sections/Location';
 import { Footer } from './components/layout/Footer';
-import { Navbar } from './components/layout/Navbar'; // Criaremos este componente
+import { Navbar } from './components/layout/Navbar';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register'; // <-- Importação adicionada
 import { Booking } from './pages/Booking';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           } />
           
           <Route path="/login" element={<Login />} />
+          <Route path="/registrar" element={<Register />} /> {/* <-- Nova rota adicionada */}
           <Route path="/agendamento" element={<Booking />} />
         </Routes>
 
