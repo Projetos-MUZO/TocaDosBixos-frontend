@@ -7,7 +7,7 @@ import { Location } from './components/sections/Location';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Booking } from './pages/Booking';
-import { Admin } from './pages/Admin';
+import  Admin  from './pages/Admin';
 
 const isAuthenticated = () => !!localStorage.getItem('user_token');
 const isAdmin = () => localStorage.getItem('user_email') === 'admin@gmail.com';
