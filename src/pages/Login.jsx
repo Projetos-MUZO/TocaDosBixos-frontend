@@ -13,9 +13,9 @@ export const Login = () => {
     localStorage.setItem('user_email', formData.email);
 
     // Se for admin, manda para o painel, se não, para o agendamento
-    if (formData.email === 'admin@gmail.com') {
+    if (formData.email === 'admin@gmail.com' && formData.password == "1234") {
       window.location.href = '/admin';
-    } else {
+    } else{
       window.location.href = '/agendamento';
     }
   };

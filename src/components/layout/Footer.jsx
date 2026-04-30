@@ -69,7 +69,7 @@ export const Footer = () => {
 
             {/* Telefone Fixo */}
             <div className="flex items-center gap-4 p-3">
-              <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center text-zinc-500">
+              <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center  text-amber-500 group-hover:bg-amber-500">
                 <Phone size={24} />
               </div>
               <div>
