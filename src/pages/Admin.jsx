@@ -81,9 +81,69 @@ const mockEvents = [
 ];
 
 export default function Admin() {
+  const [activeTab, setActiveTab] = useState('calendar');
   const [events, setEvents] = useState(mockEvents);
-  // NOVO: Estado para controlar qual evento está selecionado e exibir o modal
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    petName: '',
+    serviceId: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    time: '09:00'
+  });
+
+  const [services, setServices] = useState(() => {
+    const saved = localStorage.getItem('toca_servicos');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, name: 'Banho e Tosa', price: 'R$ 80,00', duration: 60 },
+      { id: 2, name: 'Consulta Veterinária', price: 'R$ 150,00', duration: 30 }
+    ];
+  });
+
+  const handleAddEvent = (e) => {
+    e.preventDefault();
+    const service = services.find(s => s.id === parseInt(newEvent.serviceId));
+    if (!service) return;
+
+    const start = new Date(`${newEvent.date}T${newEvent.time}:00`);
+    const end = new Date(start.getTime() + service.duration * 60000);
+
+    const event = {
+      id: Date.now(),
+      title: `${newEvent.petName} (${service.name})`,
+      start,
+      end,
+      type: service.name.toLowerCase().includes('consulta') ? 'consulta' : 'banho'
+    };
+
+    setEvents([...events, event]);
+    setIsAddModalOpen(false);
+    setNewEvent({ petName: '', serviceId: '', date: format(new Date(), 'yyyy-MM-dd'), time: '09:00' });
+  };
+
+  const handleUpdateService = (id, field, value) => {
+    const updated = services.map(s => s.id === id ? { ...s, [field]: value } : s);
+    setServices(updated);
+    localStorage.setItem('toca_servicos', JSON.stringify(updated));
+  };
+
+  const handleAddService = () => {
+    const newService = {
+      id: Date.now(),
+      name: 'Novo Serviço',
+      price: 'R$ 0,00',
+      duration: 30
+    };
+    const updated = [...services, newService];
+    setServices(updated);
+    localStorage.setItem('toca_servicos', JSON.stringify(updated));
+  };
+
+  const handleDeleteService = (id) => {
+    const updated = services.filter(s => s.id !== id);
+    setServices(updated);
+    localStorage.setItem('toca_servicos', JSON.stringify(updated));
+  };
 
   // Customização das cores dos eventos no calendário (Tema Laranja/Preto)
   const eventStyleGetter = (event) => {
@@ -148,54 +208,137 @@ export default function Admin() {
       `}</style>
 
       {/* Cabeçalho */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-orange-500">Calendário de Agendamentos</h1>
-          <p className="text-gray-400 mt-1">Gerencie a agenda da <span className="font-semibold text-orange-400">Toca dos Bixos</span></p>
+          <h1 className="text-4xl font-black text-white tracking-tighter">ADMINISTRAÇÃO</h1>
+          <p className="text-zinc-500 font-medium uppercase tracking-[0.2em] text-xs mt-1">Painel de Controle Toca dos Bixos</p>
         </div>
-        <div className="mt-4 md:mt-0">
+        
+        <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800">
           <button 
-            className="bg-orange-500 hover:bg-orange-400 text-black px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition-all transform hover:scale-105"
-            onClick={() => alert("Modal de criação de um novo agendamento abriria aqui!")}
+            onClick={() => setActiveTab('calendar')}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'calendar' ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/20' : 'text-zinc-500 hover:text-white'}`}
           >
-            + Novo Agendamento
+            Calendário
+          </button>
+          <button 
+            onClick={() => setActiveTab('services')}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'services' ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/20' : 'text-zinc-500 hover:text-white'}`}
+          >
+            Serviços
           </button>
         </div>
       </div>
 
-      {/* Container do Calendário */}
-      <div className="bg-zinc-900 p-5 rounded-2xl shadow-xl border border-zinc-800 relative z-10">
-        <div style={{ height: '75vh' }}>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '100%' }}
-            messages={{
-              next: "Próximo",
-              previous: "Anterior",
-              today: "Hoje",
-              month: "Mês",
-              week: "Semana",
-              day: "Dia",
-              agenda: "Agenda",
-              date: "Data",
-              time: "Hora",
-              event: "Evento",
-              noEventsInRange: "Nenhum agendamento neste período."
-            }}
-            culture="pt-BR"
-            eventPropGetter={eventStyleGetter}
-            defaultView="week"
-            step={30}
-            min={new Date(0, 0, 0, 7, 0, 0)}
-            max={new Date(0, 0, 0, 19, 0, 0)}
-            // NOVO: Evento disparado ao clicar no agendamento
-            onSelectEvent={(event) => setSelectedEvent(event)} 
-          />
+      {activeTab === 'calendar' ? (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-end mb-4">
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-orange-500 hover:bg-orange-400 text-black px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Novo Agendamento
+            </button>
+          </div>
+          {/* Container do Calendário */}
+          <div className="bg-zinc-900 p-5 rounded-2xl shadow-xl border border-zinc-800 relative z-10">
+            <div style={{ height: '70vh' }}>
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: '100%' }}
+                messages={{
+                  next: "Próximo",
+                  previous: "Anterior",
+                  today: "Hoje",
+                  month: "Mês",
+                  week: "Semana",
+                  day: "Dia",
+                  agenda: "Agenda",
+                  date: "Data",
+                  time: "Hora",
+                  event: "Evento",
+                  noEventsInRange: "Nenhum agendamento neste período."
+                }}
+                culture="pt-BR"
+                eventPropGetter={eventStyleGetter}
+                defaultView="week"
+                step={30}
+                min={new Date(0, 0, 0, 7, 0, 0)}
+                max={new Date(0, 0, 0, 19, 0, 0)}
+                onSelectEvent={(event) => setSelectedEvent(event)} 
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Gestão de Serviços</h2>
+              <p className="text-zinc-500 text-sm">Configure os serviços e suas durações para o agendamento.</p>
+            </div>
+            <button 
+              onClick={handleAddService}
+              className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl font-bold border border-zinc-700 transition-all flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Novo Serviço
+            </button>
+          </div>
+
+          <div className="grid gap-4">
+            {services.map((service) => (
+              <div key={service.id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex flex-wrap items-center gap-6 group hover:border-orange-500/50 transition-all">
+                <div className="flex-1 min-w-[200px] space-y-1">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nome do Serviço</label>
+                  <input 
+                    type="text" 
+                    value={service.name} 
+                    onChange={(e) => handleUpdateService(service.id, 'name', e.target.value)}
+                    className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-zinc-100 focus:border-orange-500 outline-none transition-all"
+                  />
+                </div>
+                
+                <div className="w-32 space-y-1">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Preço</label>
+                  <input 
+                    type="text" 
+                    value={service.price} 
+                    onChange={(e) => handleUpdateService(service.id, 'price', e.target.value)}
+                    className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-orange-500 font-bold focus:border-orange-500 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="w-40 space-y-1">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Duração (minutos)</label>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="number" 
+                      value={service.duration} 
+                      onChange={(e) => handleUpdateService(service.id, 'duration', parseInt(e.target.value))}
+                      className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-zinc-100 focus:border-orange-500 outline-none transition-all"
+                    />
+                    <span className="text-zinc-500 text-xs font-bold uppercase">min</span>
+                  </div>
+                </div>
+
+                <div className="flex items-end h-full pt-5">
+                  <button 
+                    onClick={() => handleDeleteService(service.id)}
+                    className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* NOVO: Modal de Detalhes do Evento */}
       {selectedEvent && (
@@ -244,7 +387,12 @@ export default function Admin() {
                     Editar
                   </button>
                   <button 
-                    onClick={() => { alert('Tem certeza que deseja cancelar?'); handleCloseModal(); }}
+                    onClick={() => { 
+                      if (window.confirm('Tem certeza que deseja cancelar este agendamento?')) {
+                        setEvents(events.filter(e => e.id !== selectedEvent.id));
+                        handleCloseModal();
+                      }
+                    }}
                     className="flex-1 bg-transparent border border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white py-2.5 rounded-xl font-bold transition-colors"
                   >
                     Cancelar
@@ -253,6 +401,81 @@ export default function Admin() {
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* NOVO: Modal para Adicionar Agendamento */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-full max-w-lg shadow-2xl relative">
+            <button 
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+
+            <h2 className="text-2xl font-black text-orange-500 mb-6 uppercase tracking-tight">Novo Agendamento</h2>
+            
+            <form onSubmit={handleAddEvent} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Nome do Pet</label>
+                <input 
+                  required
+                  type="text"
+                  placeholder="Ex: Rex"
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:border-orange-500 outline-none transition-all"
+                  value={newEvent.petName}
+                  onChange={(e) => setNewEvent({...newEvent, petName: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Serviço</label>
+                <select 
+                  required
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:border-orange-500 outline-none transition-all appearance-none"
+                  value={newEvent.serviceId}
+                  onChange={(e) => setNewEvent({...newEvent, serviceId: e.target.value})}
+                >
+                  <option value="">Selecione um serviço</option>
+                  {services.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.duration} min)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Data</label>
+                  <input 
+                    required
+                    type="date"
+                    className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:border-orange-500 outline-none transition-all"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Horário</label>
+                  <input 
+                    required
+                    type="time"
+                    className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:border-orange-500 outline-none transition-all"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-400 text-black py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-500/20 mt-4"
+              >
+                Criar Agendamento
+              </button>
+            </form>
           </div>
         </div>
       )}

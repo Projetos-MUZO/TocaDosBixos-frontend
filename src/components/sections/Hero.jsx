@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Star, PawPrint } from 'lucide-react';
 
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-zinc-950">
       {/* Elemento Decorativo */}
@@ -17,11 +20,13 @@ export const Hero = () => {
             <span className="text-amber-500">Petshop</span>
           </h1>
           <p className="text-zinc-400 mt-8 text-lg lg:pr-20 leading-relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+            Especialistas em cuidado animal com amor e dedicação. O conforto do seu pet é nossa prioridade absoluta.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button>Agendar Banho</Button>
-            <Button variant="outline">Ver Serviços</Button>
+            <Button onClick={() => navigate('/agendamento')}>Agendar Banho</Button>
+            <Button variant="outline" onClick={() => document.getElementById('servicos')?.scrollIntoView({ behavior: 'smooth' })}>
+              Ver Serviços
+            </Button>
           </div>
         </div>
         

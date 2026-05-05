@@ -23,7 +23,7 @@ function App() {
             <Route path="/" element={
               <>
                 <Hero />
-                {isAuthenticated() && <Services />}
+                <Services />
                 <Location />
               </>
             } />
